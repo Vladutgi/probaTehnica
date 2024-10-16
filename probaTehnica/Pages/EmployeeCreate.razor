@@ -1,0 +1,64 @@
+﻿@page "/AddEmployee"
+@inject IEmployeeData employeeData
+@inject NavigationManager navigation
+<h3>EmployeeCreate</h3>
+
+<div>
+    <table>
+
+        <tbody>
+            <tr>
+                <td>FirstName:</td>
+                <td>
+                    <input type="text" @bind="FirstName" placeholder="FirstName" />
+                </td>
+            </tr>
+
+            <tr>
+                <td>LastName:</td>
+                <td>
+                    <input type="text" @bind="LastName" placeholder=" LastName" />
+                </td>
+            </tr>
+
+            <tr>
+                <td>Department:</td>
+                <td>
+                    <input type="text" @bind="Department" placeholder="Department" />
+                </td>
+            </tr>
+
+            <tr>
+                <td>Salary:</td>
+                <td>
+                    <input type="number" @bind="Salary" placeholder="Salary" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <button @onclick="AddInsert">Add</button>
+</div>
+@code {
+    private string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Department { get; set; }
+    public int Salary { get; set; }
+
+    private async Task AddInsert()
+    {
+        var newInsert = new EmployeeModel
+            {
+                FirstName = FirstName,
+                LastName = LastName,
+                Department = Department,
+                Salary = Salary,
+            };
+        await employeeData.AddEmployee(newInsert);
+        navigation.NavigateTo("/Employees");
+
+    }
+
+}

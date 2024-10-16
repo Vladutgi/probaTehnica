@@ -1,0 +1,56 @@
+﻿@page "/"
+@inject IDepartmentData departmentData
+@inject IEmployeeData employeeData
+@inject NavigationManager navigation
+@inject ProtectedSessionStorage sessionStorage
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+@if (Departments == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div>
+        <button @onclick="()=> GoToViewEmployees()">View Employees</button>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var department in Departments)
+            {
+                <tr>
+                    <td>@department.DepartmentId</td>
+                    <td>@department.DepartmentName</td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+Welcome to your new app.
+
+
+@code {
+    private List<DepartmentModel> Departments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Departments = await departmentData.Departments();
+    }
+
+    private void GoToViewEmployees()
+    {
+        navigation.NavigateTo($"/Employees");
+    }
+
+}
+
+

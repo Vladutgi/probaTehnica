@@ -1,0 +1,39 @@
+Sa las optionea ca la filtrare sa se poada selecta tipul de filtrare, in sensul:
+	-sort by Name
+	-sort by Department
+	-.... 
+	Si sa fie bifabile si sa fie unele Ascending/Descending..
+
+
+Sa leg tabelele intre ele
+
+
+Sa adaug un manager pe departament
+
+
+
+
+Pentru email sa fac o verificare dupa @ si .
+
+
+Sa folosesc structura MVC
+
+
+
+
+
+
+
+Sa adaug stergerea angajatilor 
+Sa adaug editarea angajatilor
+
+
+
+
+
+
+
+
+
+
+

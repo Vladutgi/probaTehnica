@@ -1,0 +1,77 @@
+﻿@page "/Employees"
+@inject IEmployeeData employeeData
+@inject NavigationManager navigation
+@inject ProtectedSessionStorage sessionStorage
+<h3>ViewEmployees</h3>
+@if (employees == null)
+{
+    <p>
+        <em>Loading The Data...</em>
+    </p>
+}
+else
+{
+    <div>
+        <input type="text" placeholder="Search" @oninput="((txt) => SearchBoxTextModified((string)txt.Value))" />
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Department</th>
+                <th>Salary</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var employee in employees)
+            {
+                <tr>
+
+                    <td>
+                        @employee.FirstName @employee.LastName
+                    </td>
+                    <td>
+                        @employee.Department
+                    </td>
+                    <td>
+                        @employee.Salary
+                    </td>
+                    <td>
+                        <button>Edit</button><span style="color:red; font-size:22px;">❌</span>
+                    </td>
+
+                </tr>
+            }
+        </tbody>
+
+    </table>
+}
+@code {
+    private List<EmployeeModel> employees;
+    private string searchedText = "";
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await employeeData.Employees();
+    }
+
+
+    private async Task SearchBoxTextModified(string searchBoxInput)
+    {
+        searchedText = searchBoxInput;
+        await FilterEmployees();
+    }
+    private async Task FilterEmployees()
+    {
+        var result = await employeeData.Employees();
+        if (string.IsNullOrWhiteSpace(searchedText) == false)
+        {
+            result = result.Where(r => r.FirstName.Contains(searchedText, StringComparison.InvariantCultureIgnoreCase) ||
+                                        r.LastName.Contains(searchedText, StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+        }
+        employees = result;
+    }
+}
