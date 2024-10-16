@@ -11,8 +11,9 @@
 }
 else
 {
-    <div>
-        <input type="text" placeholder="Search" @oninput="((txt) => SearchBoxTextModified((string)txt.Value))" />
+    <div style="display:flex;align-items:center;">
+        <input type="text" placeholder="Search" @oninput="((txt) => SearchBoxTextModified((string)txt.Value))" style="margin-right:5px"/>  <span style="color:limegreen; font-size:50px;cursor:pointer" @onclick="GoToCreate">&#43;</span>
+
     </div>
 
     <table class="table">
@@ -25,27 +26,27 @@ else
             </tr>
         </thead>
 
-        <tbody>
-            @foreach (var employee in employees)
-            {
-                <tr>
+            <tbody>
+                @foreach (var employee in employees)
+                {
+                    <tr>
 
-                    <td>
-                        @employee.FirstName @employee.LastName
-                    </td>
-                    <td>
-                        @employee.Department
-                    </td>
-                    <td>
-                        @employee.Salary
-                    </td>
-                    <td>
-                        <button>Edit</button><span style="color:red; font-size:22px;">❌</span>
-                    </td>
+                        <td>
+                            @employee.FirstName @employee.LastName
+                        </td>
+                        <td>
+                            @employee.Department
+                        </td>
+                        <td>
+                            @employee.Salary
+                        </td>
+                        <td style="display:flex;align-items:center;">
+                            <button style="margin-right:5px;"@onclick="()=>GoToEdit(employee.EmployeeId)">Edit</button><span style="color:red; font-size:23px; cursor:pointer; padding:0px;" @onclick="()=>DeleteEmployee(employee.EmployeeId)">❌</span>
+                        </td>
 
-                </tr>
-            }
-        </tbody>
+                    </tr>
+                }
+            </tbody>
 
     </table>
 }
@@ -73,5 +74,18 @@ else
 
         }
         employees = result;
+    }
+    private void GoToCreate()
+    {
+        navigation.NavigateTo("/AddEmployee");
+    }
+    private async Task DeleteEmployee(int employeeId)
+    {
+        await employeeData.RemoveEmployee(employeeId);
+        employees = await employeeData.Employees();
+    }
+    private void GoToEdit(int employeeId)
+    {
+        navigation.NavigateTo($"/EditEmployeeDetails/{employeeId}");
     }
 }

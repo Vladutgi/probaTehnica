@@ -5,9 +5,6 @@ Sa las optionea ca la filtrare sa se poada selecta tipul de filtrare, in sensul:
 	Si sa fie bifabile si sa fie unele Ascending/Descending..
 
 
-Sa leg tabelele intre ele
-
-
 Sa adaug un manager pe departament
 
 
@@ -22,11 +19,7 @@ Sa folosesc structura MVC
 
 
 
-
-
-Sa adaug stergerea angajatilor 
-Sa adaug editarea angajatilor
-
+sa adaug legaturi intre tabele
 
 
 

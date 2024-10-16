@@ -5,5 +5,8 @@ namespace EmployeeManagementLibrary.DB
     {
         Task AddEmployee(EmployeeModel employee);
         Task<List<EmployeeModel>> Employees();
+        Task RemoveEmployee(int employeeId);
+        Task<EmployeeModel> FindEmployee(int employeeId);
+        Task UpdateEmployee(EmployeeModel employee);
     }
 }
