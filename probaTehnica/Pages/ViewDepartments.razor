@@ -1,0 +1,145 @@
+﻿@page "/Departments"
+@inject IDepartmentData departmentData
+@inject NavigationManager navigation
+@inject ProtectedSessionStorage sessionStorage
+
+<h3>ViewDepartments</h3>
+@if (departments == null)
+{
+    <em>Loading The Data...</em>
+}
+else
+{
+    <div style="display:flex; align-items:center;">
+        <input type="text" placeholder="Search" @oninput="(text => SearchBoxModified((string)text.Value))" style="margin-right:5px" />
+        <select id="filter" @onchange="SortedByModified">
+            <option value="NoFilter">NoFilter</option>
+            <option value="AlphabeticAsc">Alphabetic Ascending</option>
+            <option value="AlphabeticDesc">Alphabetic Descending</option>
+        </select>
+        <span style="color:limegreen; font-size:50px;cursor:pointer" @onclick="GoToCreate">&#43;</span>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Department Name
+                </th>
+                <th>
+                    @if (resultsCount > 0)
+                    {
+                        <div>
+                            @resultsCount.ToString() Results
+                        </div>
+                    }
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var department in departments)
+            {
+                <tr>
+                    <td>
+                        @department.DepartmentName
+                    </td>
+                    <td style="display:flex;align-items:center;">
+                        <button style="margin-right:5px;" @onclick="()=>GoToEdit(department.DepartmentId)">Edit</button><span style="color:red; font-size:23px; cursor:pointer; padding:0px;" @onclick="()=>DeleteDepartment(department.DepartmentId)">❌</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+
+}
+
+@code {
+    private List<DepartmentModel> departments;
+    private string searchedText = "";
+    private string selectedFilter { get; set; }
+    private int resultsCount = 0;
+    private static readonly SemaphoreSlim semaphore = new(1, 1);
+    private CancellationTokenSource cancellationToken;
+
+    protected override async Task OnInitializedAsync()
+    {
+        departments = await departmentData.Departments();
+        resultsCount = departments.Count();
+    }
+
+    private async Task SearchBoxModified(string searchBoxText)
+    {
+        searchedText = searchBoxText;
+        await FilterDepartments();
+
+    }
+    private async Task SortedByModified(ChangeEventArgs e)
+    {
+        selectedFilter = e.Value.ToString();
+        await FilterDepartments();
+    }
+    private async Task FilterDepartments()
+    {
+        if (cancellationToken != null)
+        {
+            cancellationToken.Cancel();
+            cancellationToken.Dispose();
+        }
+
+        cancellationToken = new CancellationTokenSource();
+        var token = cancellationToken.Token;
+        bool reached = false;
+        try
+        {
+            await semaphore.WaitAsync(token);
+            reached = true;
+            resultsCount = 0;
+            var result = await departmentData.Departments();
+            if (String.IsNullOrWhiteSpace(searchedText) == false)
+            {
+                result = result.Where(departmentData => departmentData.DepartmentName.Contains(searchedText, StringComparison.InvariantCultureIgnoreCase)).ToList();
+            }
+            if (selectedFilter == "AlphabeticAsc")
+            {
+                result = result.OrderBy(r => r.DepartmentName).ToList();
+            }
+            if (selectedFilter == "AlphabeticDesc")
+            {
+                result = result.OrderByDescending(r => r.DepartmentName).ToList();
+            }
+            resultsCount = result.Count();
+            departments = result;
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Operation was cancelled");
+        }
+        finally
+        {
+            if (reached)
+            {
+                
+            semaphore.Release();
+            }
+        }
+    }
+
+
+    private async Task DeleteDepartment(int departmentId)
+    {
+        await departmentData.RemoveDepartment(departmentId);
+        departments = await departmentData.Departments();
+
+    }
+
+    private void GoToEdit(int departmentId)
+    {
+        navigation.NavigateTo($"/EditDepartmentDetails/{departmentId}");
+    }
+    private void GoToCreate()
+    {
+        navigation.NavigateTo("/AddDepartment");
+    }
+
+}

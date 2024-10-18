@@ -1,0 +1,68 @@
+﻿@page "/AddDepartment"
+@inject IDepartmentData departmentData
+@inject NavigationManager navigation
+<h3>DepartmentCreate</h3>
+
+
+<div>
+    <table>
+
+        <tbody>
+            <tr>
+                <td>Department Name:</td>
+                <td>
+                    <input type="text" @bind="DepartmentName" placeholder="Department Name" required />
+                </td>
+            </tr>
+
+                      
+        </tbody>
+    </table>
+
+</div>
+<div>
+    <button @onclick="AddInsert">Add</button>  <button @onclick="Cancel">Cancel</button>
+    @if (String.IsNullOrEmpty(errorMessage) == false)
+    {
+        <div style="color:red;">@errorMessage</div>
+    }
+</div>
+
+@code {
+    public String DepartmentName { get; set; }
+    private string errorMessage;
+
+    private async Task AddInsert()
+    {
+        CheckForErrors();
+        if (String.IsNullOrWhiteSpace(errorMessage) == false)
+        {
+            return;
+        }
+
+        var newInsert = new DepartmentModel
+            {
+                DepartmentName = DepartmentName
+            };
+        await departmentData.AddDepartment(newInsert);
+        navigation.NavigateTo("/Departments");
+
+    }
+    private void CheckForErrors()
+    {
+        if (String.IsNullOrWhiteSpace(DepartmentName) == true)
+        {
+            errorMessage = "Please Enter a Department Name";
+        }
+        
+        else
+        {
+            errorMessage = "";
+        }
+    }
+    private void Cancel()
+    {
+        navigation.NavigateTo("/Departments");
+    }
+
+}

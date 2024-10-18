@@ -12,9 +12,46 @@
 else
 {
     <div style="display:flex;align-items:center;">
-        <input type="text" placeholder="Search" @oninput="((txt) => SearchBoxTextModified((string)txt.Value))" style="margin-right:5px"/>  <span style="color:limegreen; font-size:50px;cursor:pointer" @onclick="GoToCreate">&#43;</span>
+        <input type="text" placeholder="Search" @oninput="(text => SearchBoxTextModified((string)text.Value))" style="margin-right:5px" />
+        <select id="selectFilter" @onchange="SortedByModified">
+            <option value="NoFilter">No Filter</option>
+            <option value="AlphabeticAsc">Alphabetic Ascending</option>
+            <option value="AlphabeticDesc">Alphabetic Descending</option>
+            <option value="SalaryAsc">Salary Ascending</option>
+            <option value="SalaryDesc">Salary Descending</option>
+            <option value="DepartmentAsc">Department Ascending</option>
+            <option value="DepartmentDesc">Department Descending</option>
+        </select>
+        <span style="color:limegreen; font-size:50px;cursor:pointer" @onclick="GoToCreate">&#43;</span>
 
     </div>
+    <div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Search by</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        Name<input type="checkbox" value="Name" @onchange="e => FilterBy(e,'n')"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Department<input type="checkbox" value="Department" @onchange="e => FilterBy(e,'d')" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Salary<input type="checkbox" value="Salary" @onchange="e => FilterBy(e,'s')" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
 
     <table class="table">
         <thead>
@@ -22,40 +59,53 @@ else
                 <th>Full Name</th>
                 <th>Department</th>
                 <th>Salary</th>
-                <th></th>
+                <th>
+                    @if (resultsCount > 0) 
+                    {
+                        <div>@resultsCount.ToString() Results</div>
+                    }
+
+                </th>
             </tr>
         </thead>
 
-            <tbody>
-                @foreach (var employee in employees)
-                {
-                    <tr>
+        <tbody>
+            @foreach (var employee in employees)
+            {
+                <tr>
 
-                        <td>
-                            @employee.FirstName @employee.LastName
-                        </td>
-                        <td>
-                            @employee.Department
-                        </td>
-                        <td>
-                            @employee.Salary
-                        </td>
-                        <td style="display:flex;align-items:center;">
-                            <button style="margin-right:5px;"@onclick="()=>GoToEdit(employee.EmployeeId)">Edit</button><span style="color:red; font-size:23px; cursor:pointer; padding:0px;" @onclick="()=>DeleteEmployee(employee.EmployeeId)">❌</span>
-                        </td>
+                    <td>
+                        @employee.FirstName @employee.LastName
+                    </td>
+                    <td>
+                        @employee.Department
+                    </td>
+                    <td>
+                        @employee.Salary
+                    </td>
+                    <td style="display:flex;align-items:center;">
+                        <button style="margin-right:5px;" @onclick="()=>GoToEdit(employee.EmployeeId)">Edit</button><span style="color:red; font-size:23px; cursor:pointer; padding:0px;" @onclick="()=>DeleteEmployee(employee.EmployeeId)">❌</span>
+                    </td>
 
-                    </tr>
-                }
-            </tbody>
+                </tr>
+            }
+        </tbody>
 
     </table>
 }
 @code {
     private List<EmployeeModel> employees;
     private string searchedText = "";
+    private string SelectedFilter { get; set; }
+    private HashSet<string> filterList = new HashSet<string>();
+    private int resultsCount;
+    private static readonly SemaphoreSlim semaphore = new(1, 1);
+    private CancellationTokenSource cancellationToken;
+
     protected override async Task OnInitializedAsync()
     {
         employees = await employeeData.Employees();
+        resultsCount = employees.Count();
     }
 
 
@@ -64,16 +114,92 @@ else
         searchedText = searchBoxInput;
         await FilterEmployees();
     }
+    private async Task SortedByModified(ChangeEventArgs e)
+    {
+        SelectedFilter = e.Value.ToString();
+        await FilterEmployees();
+    }
+    private async Task FilterBy(ChangeEventArgs e,char filter)
+    {
+        var isChecked = (bool)e.Value;
+        if (isChecked)
+        {
+            filterList.Add(filter.ToString());
+        }
+        else
+        {
+            filterList.Remove(filter.ToString());
+        }
+        await FilterEmployees();
+    }
+
     private async Task FilterEmployees()
     {
-        var result = await employeeData.Employees();
-        if (string.IsNullOrWhiteSpace(searchedText) == false)
+        if (cancellationToken != null)
         {
-            result = result.Where(r => r.FirstName.Contains(searchedText, StringComparison.InvariantCultureIgnoreCase) ||
-                                        r.LastName.Contains(searchedText, StringComparison.InvariantCultureIgnoreCase)).ToList();
-
+            cancellationToken.Cancel();
+            cancellationToken.Dispose();
         }
-        employees = result;
+
+        cancellationToken = new CancellationTokenSource();
+        var token = cancellationToken.Token;
+        bool reached = false;
+        try
+        {
+            await semaphore.WaitAsync(token);
+            reached = true;
+            resultsCount = 0;
+            var result = await employeeData.Employees();
+            if (string.IsNullOrWhiteSpace(searchedText) == false)
+            {
+                result = result.Where(employee => ((filterList.Contains("n") || filterList.Count == 0) &&
+
+                (employee.FirstName.Contains(searchedText, StringComparison.InvariantCultureIgnoreCase) ||
+                employee.LastName.Contains(searchedText, StringComparison.InvariantCultureIgnoreCase))) ||
+
+                (filterList.Contains("d") && employee.Department.Contains(searchedText, StringComparison.InvariantCultureIgnoreCase)) ||
+                (filterList.Contains("s") && employee.Salary.ToString().Contains(searchedText, StringComparison.InvariantCultureIgnoreCase))).ToList();
+
+            }
+            if (SelectedFilter == "AlphabeticAsc")
+            {
+                result = result.OrderBy(r => r.FirstName).ToList();
+            }
+            if (SelectedFilter == "AlphabeticDesc")
+            {
+                result = result.OrderByDescending(r => r.FirstName).ToList();
+            }
+            if (SelectedFilter == "SalaryAsc")
+            {
+                result = result.OrderBy(r => r.Salary).ToList();
+            }
+            if (SelectedFilter == "SalaryDesc")
+            {
+                result = result.OrderByDescending(r => r.Salary).ToList();
+            }
+            if (SelectedFilter == "DepartmentAsc")
+            {
+                result = result.OrderBy(r => r.Department).ToList();
+            }
+            if (SelectedFilter == "DepartmentDesc")
+            {
+                result = result.OrderByDescending(r => r.Department).ToList();
+            }
+            resultsCount = result.Count();
+            employees = result;
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Operation was cancelled");
+        }
+        finally
+        {
+            if (reached)
+            {
+
+                semaphore.Release();
+            }
+        }
     }
     private void GoToCreate()
     {

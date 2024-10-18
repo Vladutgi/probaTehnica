@@ -1,0 +1,93 @@
+﻿@page "/EditDepartmentDetails/{DepartmentId:int}"
+@inject IDepartmentData departmentData
+@inject NavigationManager navigation
+
+<h3>EditDepartmentDetails</h3>
+
+
+
+<div>
+    <table>
+
+        <tbody>
+            <tr>
+                <td>Department Name:</td>
+                <td>
+                    <input type="text" @bind="DepartmentName" placeholder="Department Name" required />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<div>
+    <button @onclick="UpdateInsert">Save</button>  <button @onclick="Cancel">Cancel</button>
+    @if (String.IsNullOrEmpty(errorMessage) == false)
+    {
+        <div style="color:red;">@errorMessage</div>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public int DepartmentId { get; set; }
+    private string DepartmentName { get; set; }
+
+    private string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var department = await departmentData.FindDepartment(DepartmentId);
+        if (department != null)
+        {
+            DepartmentName = department.DepartmentName;
+        }
+    }
+
+    private async Task UpdateInsert()
+    {
+
+
+        CheckForErrors();
+        if (String.IsNullOrWhiteSpace(errorMessage) == false)
+        {
+            return;
+        }
+
+        var modifiedInsert = new DepartmentModel
+            {
+                DepartmentId = DepartmentId,
+                DepartmentName = DepartmentName,
+                
+            };
+        try
+        {
+
+            await departmentData.UpdateDepartment(modifiedInsert);
+            navigation.NavigateTo("/Departments");
+        }
+        catch { }
+
+
+
+    }
+    private void CheckForErrors()
+    {
+        if (String.IsNullOrWhiteSpace(DepartmentName) == true)
+        {
+            errorMessage = "Please Enter a Department Name";
+        }
+        
+        else
+        {
+            errorMessage = "";
+        }
+    }
+    private void Cancel()
+    {
+        navigation.NavigateTo("/Departments");
+    }
+
+}
