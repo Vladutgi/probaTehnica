@@ -15,13 +15,100 @@
 <div>
     <button @onclick="()=> GoToViewDepartments()">View Departments</button>
 </div>
-
+<div>
+    <button @onclick="()=> GoToViewAddUsers()">Add Users</button>
+</div>
 <p></p>
 Welcome to your new app.
 
+@if (employees != null)
+{
+    @if (employees.Count > 1)
+    {
+        
+    <table>
+    <tbody>
+        <tr >
+            <td ><BarChart Data="chartData" /></td>
+            <td style ="padding-left:30px">
+                <BarChart Data="MinMaxSalary" />
+            </td>
+        </tr>
+        <tr>
+            <td><BarChart Data="EmployeesPerDepartment" /></td>
+        </tr>
+    </tbody>
+</table>
+    <h3>Min and Max Salaries</h3>
+    }
+}
 
 @code {
+    private List<EmployeeModel> employees;
 
+    private List<BarChartData> chartData = new List<BarChartData>();
+    private List<BarChartData> MinMaxSalary = new List<BarChartData>();
+    private List<BarChartData> EmployeesPerDepartment = new List<BarChartData>();
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await employeeData.Employees();
+        CalculateAverageSalary();
+        ShowMinMaxSalaries();
+        ShowEmployeesPerDepartment();
+    }
+    // private void  CalculateAverageSalary()
+    // {
+    //     var results = employees.GroupBy(e => e.Department);
+    //     foreach(var dept in results)
+    //     {
+    //         double avgSalary = dept.Average(e => e.Salary);
+    //         avgSalary = Math.Round(avgSalary, 2);
+    //         chartData.Add(new BarChartData { Label = dept.Key, Value = avgSalary });
+    //     }
+
+
+    // }
+
+    private void CalculateAverageSalary()
+    {
+        // var results = employees.GroupBy(e => e.Department);
+        // foreach(var dept in results)
+        // {
+        //     double avgSalary = dept.Average(e => e.Salary);
+
+        //     chartData.Add(new BarChartData { Label = dept.Key, Value = avgSalary });
+        // }
+
+        foreach (var emp in employees)
+        {
+            chartData.Add(new BarChartData { Label = emp.FirstName, Value = emp.Salary });
+
+        }
+    }
+    private void ShowMinMaxSalaries()
+    {
+
+        if (employees.Count > 1)
+        {
+        var minSalary = employees.OrderBy(e => e.Salary).FirstOrDefault();
+        var maxSalary = employees.OrderByDescending(e => e.Salary).FirstOrDefault();
+        double totalSalary = minSalary.Salary + maxSalary.Salary;
+        var min = ((minSalary.Salary) / totalSalary) * 100;
+        var max = ((maxSalary.Salary) / totalSalary) * 100;
+        MinMaxSalary.Add(new BarChartData { Label = minSalary.FirstName +" "+ minSalary.LastName, Value = minSalary.Salary, Percentage=min.ToString("0.0") });
+        MinMaxSalary.Add(new BarChartData { Label = maxSalary.FirstName + " " + maxSalary.LastName, Value = maxSalary.Salary, Percentage = max.ToString("0.0") });
+            
+        }
+    }
+    private void ShowEmployeesPerDepartment()
+    {
+        var results = employees.GroupBy(e => e.Department);
+
+        foreach( var dept in results)
+        {
+            EmployeesPerDepartment.Add(new BarChartData { Label = dept.Key, Value = dept.Count() });
+        }
+    }
     private void GoToViewEmployees()
     {
         navigation.NavigateTo($"/Employees");
@@ -29,6 +116,10 @@ Welcome to your new app.
     private void GoToViewDepartments()
     {
         navigation.NavigateTo($"/Departments");
+    }
+    private void GoToViewAddUsers()
+    {
+        navigation.NavigateTo($"/AddUser");
     }
 
 }

@@ -1,0 +1,178 @@
+﻿@page "/AddUser"
+@inject IUserData userData
+@inject NavigationManager navigation
+<div class="container">
+    <h3>UserCreate</h3>
+    <div class="createBox">
+        <table>
+
+            <tbody>
+                <tr>
+                    <td>FirstName:</td>
+                    <td>
+                        <input type="text" @bind="FirstName" placeholder="FirstName" required />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>LastName:</td>
+                    <td>
+                        <input type="text" @bind="LastName" placeholder="LastName" required />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Email:</td>
+                    <td>
+                        <input type="text" @bind="Email" placeholder="Email" required />
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>EncryptedPassword:</td>
+                    <td>
+                        <input type="text" @bind="EncryptedPassword" placeholder="EncryptedPassword" required />
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>SecretQuestion:</td>
+                    <td>
+                        <input type="text" @bind="SecretQuestion" placeholder="SecretQuestion" required />
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>EncryptedQuestionAnswer:</td>
+                    <td>
+                        <input type="text" @bind="EncryptedQuestionAnswer" placeholder="EncryptedQuestionAnswer" required />
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>Role:</td>
+                    <td>
+                        <input type="text" @bind="Role" placeholder="Role" required />
+                    </td>
+                </tr>
+
+
+            </tbody>
+        </table>
+        <div class="buttons">
+            <button @onclick="AddInsert">Add</button>  <button @onclick="Cancel">Cancel</button>
+            @if (String.IsNullOrEmpty(errorMessage) == false)
+            {
+                <div style="color:red;">@errorMessage</div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private string errorMessage;
+    private string FirstName;
+    private string LastName;
+    private string Email;
+    private string EncryptedPassword;
+    private string SecretQuestion;
+    private string EncryptedQuestionAnswer;
+    private string Role;
+    private DateTime Created;
+    private DateTime LastModified;
+
+    private async Task AddInsert()
+    {
+        CheckForErrors();
+        if (String.IsNullOrWhiteSpace(errorMessage) == false)
+        {
+            return;
+        }
+
+        var newInsert = new UserModel
+            {
+                FirstName = FirstName,
+                LastName = LastName,
+                Email = Email.ToLower(),
+                EncryptedPassword = EncryptedPassword,
+                SecretQuestion = SecretQuestion,
+                EncryptedQuestionAnswer = EncryptedQuestionAnswer,
+                Role = Role,
+                Created = DateTime.UtcNow,
+                LastModified = DateTime.UtcNow
+
+            };
+        await userData.AddUser(newInsert);
+        navigation.NavigateTo("/");
+
+    }
+    private void CheckForErrors()
+    {
+        if (String.IsNullOrWhiteSpace(FirstName) == true)
+        {
+            errorMessage = "Please enter a first name";
+        }
+        else if (String.IsNullOrWhiteSpace(LastName) == true)
+        {
+            errorMessage = "Please enter a last name";
+        }
+        // else if (String.IsNullOrWhiteSpace(SelectedDepartment) == true)
+        // {
+        //     errorMessage = "Please enter a department";
+        // }
+        // else if (Salary <= 0)
+        // {
+        //     errorMessage = "Please enter a salary";
+        // }
+        else
+        {
+            errorMessage = "";
+        }
+    }
+    private void Cancel()
+    {
+        navigation.NavigateTo("/Employees");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+
+    
+    .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 90vh;
+        text-align: center;
+        margin: auto;
+        width: 100vw;
+    }
+
+    .createBox {
+        width: fit-content;
+        height: fit-content;
+        background-color: darkcyan;
+
+        padding: 30px;
+        border-radius: 10px;
+        text-align: left;
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: center;
+        padding-top: 30px;
+    }
+</style>

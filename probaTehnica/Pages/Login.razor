@@ -1,0 +1,137 @@
+﻿@page "/Login"
+
+@inject IUserData userData
+@inject NavigationManager navigation
+<div class="container">
+    <h3>Login</h3>
+    <div class="createBox">
+        <table>
+
+            <tbody>
+
+                <tr>
+                    <td>Email:</td>
+                    <td>
+                        <input type="text" @bind="Email" placeholder="Email" required />
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>EncryptedPassword:</td>
+                    <td>
+                        <input type="text" @bind="Password" placeholder="Password" required />
+
+                    </td>
+                </tr>
+
+
+
+            </tbody>
+        </table>
+        <div>
+            <a href="/AddUser">Create new user</a>
+        </div>
+        <div class="buttons">
+            <button @onclick="Connect">Add</button>  <button @onclick="Cancel">Cancel</button>
+            @if (String.IsNullOrEmpty(errorMessage) == false)
+            {
+                <div style="color:red;">@errorMessage</div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private string errorMessage;
+
+    private string Email;
+    private string Password;
+
+    private async Task Connect()
+    {
+        CheckForErrors();
+        if (String.IsNullOrWhiteSpace(errorMessage) == false)
+        {
+            return;
+        }
+
+        if (await userData.CheckDetails(Email, Password) == true)
+        {
+
+            navigation.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = "Invalid email or password";
+        }
+
+    }
+    private void CheckForErrors()
+    {
+        if (String.IsNullOrWhiteSpace(Email) == true)
+        {
+            errorMessage = "Please enter your email";
+        }
+        else if (String.IsNullOrWhiteSpace(Password) == true)
+        {
+            errorMessage = "Please enter your password";
+        }
+        // else if (String.IsNullOrWhiteSpace(SelectedDepartment) == true)
+        // {
+        //     errorMessage = "Please enter a department";
+        // }
+        // else if (Salary <= 0)
+        // {
+        //     errorMessage = "Please enter a salary";
+        // }
+        else
+        {
+            errorMessage = "";
+        }
+    }
+    private void Cancel()
+    {
+        navigation.NavigateTo("/Employees");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 90vh;
+        text-align: center;
+        margin: auto;
+        width: 100vw;
+    }
+
+    .createBox {
+        width: fit-content;
+        height: fit-content;
+        background-color: pink;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: left;
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: center;
+        padding-top: 30px;
+    }
+</style>

@@ -9,6 +9,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddDbContext<DBDataContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IDepartmentData, DepartmentData>();
 builder.Services.AddScoped<IEmployeeData, EmployeeData>();
+builder.Services.AddScoped<IUserData, UserData>();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

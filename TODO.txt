@@ -22,11 +22,10 @@ Sa folosesc structura MVC
 sa adaug legaturi intre tabele
 
 
+Sa adaug o pagina de autentificare
 
-Sa adaug o pagina pentru generarea de rapoarte --> https://demos.blazorbootstrap.com/charts/pie-chart
-
-
-
+Sa adaug pagina am uitat parola
+Sa adaug criptare la parola
 
 
 
