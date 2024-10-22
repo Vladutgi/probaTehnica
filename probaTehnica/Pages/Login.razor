@@ -1,10 +1,11 @@
 ﻿@page "/Login"
-
+@inject SessionService sessionService
 @inject IUserData userData
 @inject NavigationManager navigation
 <div class="container">
-    <h3>Login</h3>
     <div class="createBox">
+        <h3 class="pageText">Login</h3>
+
         <table>
 
             <tbody>
@@ -17,10 +18,16 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>EncryptedPassword:</td>
+                    <td>Password:</td>
                     <td>
-                        <input type="text" @bind="Password" placeholder="Password" required />
+                        <input type="password" @bind="Password" placeholder="Password" required />
 
+                    </td>
+                </tr>
+                <tr>
+                    <td>Remember me:</td>
+                    <td>
+                        <input type="checkbox" @bind="RememberMe" />
                     </td>
                 </tr>
 
@@ -28,11 +35,22 @@
 
             </tbody>
         </table>
-        <div>
-            <a href="/AddUser">Create new user</a>
+        <div class="hrefContainer">
+            <table class="hrefBody">
+                <tbody>
+                    <tr>
+                        <td class="addUserCell">
+                            <a href="/AddUser">Create new user</a>
+                        </td>
+                        <td class="forgotPasswordCell">
+                            <a href="/ForgotPassword">Forgot password</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
         <div class="buttons">
-            <button @onclick="Connect">Add</button>  <button @onclick="Cancel">Cancel</button>
+            <button @onclick="Connect">Connect</button>  <button @onclick="Cancel">Cancel</button>
             @if (String.IsNullOrEmpty(errorMessage) == false)
             {
                 <div style="color:red;">@errorMessage</div>
@@ -46,9 +64,37 @@
 
     private string Email;
     private string Password;
+    private bool IsLoading = false;
+    private string user = null;
+    private bool RememberMe { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool rendered)
+    {
+        if (rendered)
+        {
+            var savedEmail = await sessionService.GetSavedEmail();
+            if(string.IsNullOrEmpty(savedEmail)==false)
+            {
+                Email=savedEmail;
+                RememberMe = true;
+            }
+
+            user = await sessionService.GetCurrentUser();
+            if (string.IsNullOrEmpty(user)==false)
+            {
+                navigation.NavigateTo("/");
+            }
+            StateHasChanged();
+        }
+    }
 
     private async Task Connect()
     {
+        if (IsLoading == true)
+        {
+            return;
+        }
+        IsLoading = true;
         CheckForErrors();
         if (String.IsNullOrWhiteSpace(errorMessage) == false)
         {
@@ -57,6 +103,15 @@
 
         if (await userData.CheckDetails(Email, Password) == true)
         {
+            await sessionService.SetCurrentUser(Email);
+            if(RememberMe==true)
+            {
+                await sessionService.SetSavedEmail(Email);
+            }
+            else
+            {
+                await sessionService.ClearSavedEmail();
+            }
 
             navigation.NavigateTo("/");
         }
@@ -64,6 +119,7 @@
         {
             errorMessage = "Invalid email or password";
         }
+        IsLoading = false;
 
     }
     private void CheckForErrors()
@@ -76,14 +132,7 @@
         {
             errorMessage = "Please enter your password";
         }
-        // else if (String.IsNullOrWhiteSpace(SelectedDepartment) == true)
-        // {
-        //     errorMessage = "Please enter a department";
-        // }
-        // else if (Salary <= 0)
-        // {
-        //     errorMessage = "Please enter a salary";
-        // }
+
         else
         {
             errorMessage = "";
@@ -91,7 +140,7 @@
     }
     private void Cancel()
     {
-        navigation.NavigateTo("/Employees");
+        navigation.NavigateTo("/");
     }
 }
 
@@ -123,10 +172,14 @@
     .createBox {
         width: fit-content;
         height: fit-content;
-        background-color: pink;
+        background-color: orange;
         padding: 30px;
         border-radius: 10px;
         text-align: left;
+    }
+
+    .pageText {
+        text-align: center;
     }
 
     .buttons {
@@ -134,4 +187,21 @@
         justify-content: center;
         padding-top: 30px;
     }
+
+    .hrefContainer {
+        width: 100%;
+    }
+
+    .hrefBody {
+        width: 100%;
+    }
+
+    .addUserCell {
+        text-align: left;
+    }
+
+    .forgotPasswordCell {
+        text-align: right;
+    }
+
 </style>

@@ -2,64 +2,72 @@
 @inject IEmployeeData employeeData
 @inject IDepartmentData departmentData
 @inject NavigationManager navigation
-<h3>EditEmployeeDetails</h3>
+@inject SessionService sessionService
 
-<div>
-    <table>
+@if (String.IsNullOrEmpty(user) == true)
+{
+    <em>Loading....</em>
+}
+else
+{
+    <h3>EditEmployeeDetails</h3>
 
-        <tbody>
-            <tr>
-                <td>FirstName:</td>
-                <td>
-                    <input type="text" @bind="FirstName" placeholder="FirstName" required />
-                </td>
-            </tr>
+    <div>
+        <table>
 
-            <tr>
-                <td>LastName:</td>
-                <td>
-                    <input type="text" @bind="LastName" placeholder=" LastName" required />
-                </td>
-            </tr>
+            <tbody>
+                <tr>
+                    <td>FirstName:</td>
+                    <td>
+                        <input type="text" @bind="FirstName" placeholder="FirstName" required />
+                    </td>
+                </tr>
 
-            <tr>
-                <td>Department:</td>
-                <td>
-                    <select id="selectDepartment" @bind="SelectedDepartment" required>
-                        <option value="">Select a Department</option>
+                <tr>
+                    <td>LastName:</td>
+                    <td>
+                        <input type="text" @bind="LastName" placeholder=" LastName" required />
+                    </td>
+                </tr>
 
-                        @if (departments != null)
-                        {
-                            @foreach (var department in departments)
+                <tr>
+                    <td>Department:</td>
+                    <td>
+                        <select id="selectDepartment" @bind="SelectedDepartment" required>
+                            <option value="">Select a Department</option>
+
+                            @if (departments != null)
                             {
-                                <option value="@department.DepartmentName">@department.DepartmentName</option>
+                                @foreach (var department in departments)
+                                {
+                                    <option value="@department.DepartmentName">@department.DepartmentName</option>
+                                }
+
                             }
 
-                        }
+                        </select>
+                    </td>
+                </tr>
 
-                    </select>
-                </td>
-            </tr>
+                <tr>
+                    <td>Salary:</td>
+                    <td>
+                        <input type="number" @bind="Salary" required min="1" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-            <tr>
-                <td>Salary:</td>
-                <td>
-                    <input type="number" @bind="Salary" required min="1" />
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    </div>
 
-</div>
-
-<div>
-    <button @onclick="UpdateInsert">Save</button>  <button @onclick="Cancel">Cancel</button>
-    @if (String.IsNullOrEmpty(errorMessage) == false)
-    {
-        <div style="color:red;">@errorMessage</div>
-    }
-</div>
-
+    <div>
+        <button @onclick="UpdateInsert">Save</button>  <button @onclick="Cancel">Cancel</button>
+        @if (String.IsNullOrEmpty(errorMessage) == false)
+        {
+            <div style="color:red;">@errorMessage</div>
+        }
+    </div>
+}
 @code {
 
     [Parameter]
@@ -70,6 +78,7 @@
     private int Salary { get; set; }
     private string SelectedDepartment { get; set; }
     private string errorMessage;
+    private string user = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -83,33 +92,44 @@
             Salary = employee.Salary;
         }
     }
-
+    protected override async Task OnAfterRenderAsync(bool rendered)
+    {
+        if (rendered)
+        {
+            user = await sessionService.GetCurrentUser();
+            if (string.IsNullOrEmpty(user) == true)
+            {
+                navigation.NavigateTo("/Login");
+            }
+            StateHasChanged();
+        }
+    }
     private async Task UpdateInsert()
     {
 
-        
-            CheckForErrors();
-            if (String.IsNullOrWhiteSpace(errorMessage) == false)
-            {
-                return;
-            }
 
-            var modifiedInsert = new EmployeeModel
-                {
-                    EmployeeId = EmployeeId,
-                    FirstName = FirstName,
-                    LastName = LastName,
-                    Department = SelectedDepartment,
-                    Salary = Salary,
-                };
-            try
-            {
+        CheckForErrors();
+        if (String.IsNullOrWhiteSpace(errorMessage) == false)
+        {
+            return;
+        }
 
-                await employeeData.UpdateEmployee(modifiedInsert);
-                navigation.NavigateTo("/Employees");
-            }
-            catch{}
-        
+        var modifiedInsert = new EmployeeModel
+            {
+                EmployeeId = EmployeeId,
+                FirstName = FirstName,
+                LastName = LastName,
+                Department = SelectedDepartment,
+                Salary = Salary,
+            };
+        try
+        {
+
+            await employeeData.UpdateEmployee(modifiedInsert);
+            navigation.NavigateTo("/Employees");
+        }
+        catch { }
+
 
 
     }

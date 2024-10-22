@@ -1,7 +1,9 @@
 ﻿@page "/Employees"
 @inject IEmployeeData employeeData
 @inject NavigationManager navigation
-@inject ProtectedSessionStorage sessionStorage
+@inject SessionService sessionService
+
+
 <h3>ViewEmployees</h3>
 @if (employees == null)
 {
@@ -101,13 +103,30 @@ else
     private int resultsCount;
     private static readonly SemaphoreSlim semaphore = new(1, 1);
     private CancellationTokenSource cancellationToken;
+    private string user = null;
 
     protected override async Task OnInitializedAsync()
     {
         employees = await employeeData.Employees();
         resultsCount = employees.Count();
     }
-
+    protected override async Task OnAfterRenderAsync(bool rendered)
+    {
+        if (rendered)
+        {
+            user = await sessionService.GetCurrentUser();
+            if (string.IsNullOrEmpty(user) == true)
+            {
+                navigation.NavigateTo("/Login");
+            }
+            StateHasChanged();
+        }
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        employees = await employeeData.Employees();
+        resultsCount = employees.Count();
+    }
 
     private async Task SearchBoxTextModified(string searchBoxInput)
     {

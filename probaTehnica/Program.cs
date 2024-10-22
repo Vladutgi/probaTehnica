@@ -1,3 +1,4 @@
+using EmployeeManagement;
 using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,16 @@ builder.Services.AddDbContext<DBDataContext>(options => options.UseSqlServer(bui
 builder.Services.AddScoped<IDepartmentData, DepartmentData>();
 builder.Services.AddScoped<IEmployeeData, EmployeeData>();
 builder.Services.AddScoped<IUserData, UserData>();
+builder.Services.AddScoped<SessionService>();
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(1);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -34,5 +45,5 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-
+app.UseSession();
 app.Run();

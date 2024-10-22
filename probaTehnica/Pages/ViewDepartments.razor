@@ -1,7 +1,8 @@
 ﻿@page "/Departments"
 @inject IDepartmentData departmentData
 @inject NavigationManager navigation
-@inject ProtectedSessionStorage sessionStorage
+@inject SessionService sessionService
+
 
 <h3>ViewDepartments</h3>
 @if (departments == null)
@@ -61,13 +62,25 @@ else
     private int resultsCount = 0;
     private static readonly SemaphoreSlim semaphore = new(1, 1);
     private CancellationTokenSource cancellationToken;
+    private string user = null;
 
     protected override async Task OnInitializedAsync()
     {
         departments = await departmentData.Departments();
         resultsCount = departments.Count();
     }
-
+    protected override async Task OnAfterRenderAsync(bool rendered)
+    {
+        if (rendered)
+        {
+            user = await sessionService.GetCurrentUser();
+            if (string.IsNullOrEmpty(user) == true)
+            {
+                navigation.NavigateTo("/Login");
+            }
+            StateHasChanged();
+        }
+    }
     private async Task SearchBoxModified(string searchBoxText)
     {
         searchedText = searchBoxText;

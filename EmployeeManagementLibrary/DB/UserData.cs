@@ -1,4 +1,6 @@
-﻿namespace EmployeeManagementLibrary.DB;
+﻿using System.Text;
+
+namespace EmployeeManagementLibrary.DB;
 public class UserData : IUserData
 {
     private readonly DBDataContext _context;
@@ -11,6 +13,10 @@ public class UserData : IUserData
     {
         return await _context.Users.ToListAsync();
     }
+    private async Task<bool> AnyManagers()
+    {
+        return await _context.Users.AnyAsync(u => u.Role == "Manager");
+    }
     public async Task AddUser(UserModel user)
     {
         if (user != null)
@@ -18,6 +24,16 @@ public class UserData : IUserData
             var emailExists = await _context.Users.AnyAsync(d => d.Email.Equals(user.Email));
             if (emailExists == false)
             {
+                if ( await AnyManagers() == false)
+                {
+                    user.Role = "Manager";
+                }
+                else
+                {
+                    user.Role = "";
+                }
+                user.EncryptedPassword = PasswordHash(user.EncryptedPassword);
+                user.EncryptedQuestionAnswer = PasswordHash(user.EncryptedQuestionAnswer);
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
             }
@@ -29,7 +45,7 @@ public class UserData : IUserData
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email);
 
-        if (user.EncryptedPassword == password)
+        if (user!= null &&user.EncryptedPassword == PasswordHash(password))
         {
             return true;
 
@@ -37,6 +53,42 @@ public class UserData : IUserData
 
         return false;
 
+
+    }
+
+    public async Task<UserModel> FindUser(string email,string answer)
+    {
+        var result = await _context.Users.FirstOrDefaultAsync(u=> u.Email == email);
+        if (result != null)
+        {
+            if (result.EncryptedQuestionAnswer == PasswordHash(answer))
+            {
+                return result;
+            }
+        }
+        return null;
+    }
+    public async Task UpdateUser(UserModel userModel)
+    {
+        if (userModel != null)
+        {
+            var existingUser = await _context.Users.FindAsync(userModel.UserId);
+            if (existingUser != null)
+            {
+                existingUser.EncryptedPassword = PasswordHash(userModel.EncryptedPassword);
+                existingUser.LastModified = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+            else { throw new InvalidOperationException("User does not exist"); }
+        }
+    }
+    public string PasswordHash(string Pasword)
+    {
+        using (var sha256 = System.Security.Cryptography.SHA256.Create())
+        {
+            byte[] hashedPassword = sha256.ComputeHash(Encoding.UTF8.GetBytes(Pasword));
+            return Convert.ToBase64String(hashedPassword);
+        }
 
     }
 

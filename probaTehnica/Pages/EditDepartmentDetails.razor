@@ -1,34 +1,40 @@
 ﻿@page "/EditDepartmentDetails/{DepartmentId:int}"
 @inject IDepartmentData departmentData
 @inject NavigationManager navigation
+@inject SessionService sessionService
+@if (String.IsNullOrEmpty(user) == true)
+{
+    <em>Loading....</em>
+}
+else
+{
+    <h3>EditDepartmentDetails</h3>
 
-<h3>EditDepartmentDetails</h3>
 
 
+    <div>
+        <table>
 
-<div>
-    <table>
+            <tbody>
+                <tr>
+                    <td>Department Name:</td>
+                    <td>
+                        <input type="text" @bind="DepartmentName" placeholder="Department Name" required />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-        <tbody>
-            <tr>
-                <td>Department Name:</td>
-                <td>
-                    <input type="text" @bind="DepartmentName" placeholder="Department Name" required />
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    </div>
 
-</div>
-
-<div>
-    <button @onclick="UpdateInsert">Save</button>  <button @onclick="Cancel">Cancel</button>
-    @if (String.IsNullOrEmpty(errorMessage) == false)
-    {
-        <div style="color:red;">@errorMessage</div>
-    }
-</div>
-
+    <div>
+        <button @onclick="UpdateInsert">Save</button>  <button @onclick="Cancel">Cancel</button>
+        @if (String.IsNullOrEmpty(errorMessage) == false)
+        {
+            <div style="color:red;">@errorMessage</div>
+        }
+    </div>
+}
 @code {
 
     [Parameter]
@@ -36,6 +42,7 @@
     private string DepartmentName { get; set; }
 
     private string errorMessage;
+    private string user = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,6 +53,18 @@
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool rendered)
+    {
+        if (rendered)
+        {
+            user = await sessionService.GetCurrentUser();
+            if (string.IsNullOrEmpty(user) == true)
+            {
+                navigation.NavigateTo("/Login");
+            }
+            StateHasChanged();
+        }
+    }
     private async Task UpdateInsert()
     {
 
@@ -60,7 +79,7 @@
             {
                 DepartmentId = DepartmentId,
                 DepartmentName = DepartmentName,
-                
+
             };
         try
         {
@@ -79,7 +98,7 @@
         {
             errorMessage = "Please Enter a Department Name";
         }
-        
+
         else
         {
             errorMessage = "";

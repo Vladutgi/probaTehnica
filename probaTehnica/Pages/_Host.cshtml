@@ -6,3 +6,26 @@
 }
 
 <component type="typeof(App)" render-mode="ServerPrerendered" />
+
+<script>
+    let timer;
+
+
+    function resetTimer() {
+        clearTimeout(timer);
+        timer = setTimeout(logOut,60000);
+    }
+
+    function logOut() {
+        DonNet.invokeMethodAsync('EmployeeManagement','Logout');
+        window.location.href = "/Login";
+    }
+
+    window.onload = resetTimer;
+    window.onmousemove = resetTimer;
+    window.onkeydown = resetTimer;
+</script>
+
+
+
+

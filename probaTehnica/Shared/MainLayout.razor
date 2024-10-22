@@ -1,9 +1,34 @@
 ﻿@inherits LayoutComponentBase
-
+@inject SessionService sessionService
+@inject NavigationManager navigation
 <PageTitle>probaTehnica</PageTitle>
 
 <div class="page">
+    <header>
+        <div class="menubar">
+            @if (isLoggedIn == true && isLoading == false)
+            {
+                <div style="margin-right:10px; cursor:pointer">
+                    <h2 @onclick="GoHome"><b>Home</b></h2>
+                </div>
+                <div>
+                    <h5 style="margin-left:5px; cursor:pointer" @onclick="GoToViewDepartments">Departments</h5>
+                </div>
+                <div>
+                    <h5 style="margin-left:10px; cursor:pointer" @onclick="GoToViewEmployees">Employees</h5>
+                </div>
+                <div class="usercontrols">
+                    <div style="margin-left:5px;">
+                        <h5>@user</h5>
+                    </div>
+                    <div style="margin-left:5px;">
+                        <h5><a @onclick="Logout" style="cursor:pointer"><b>Logout ➔</b></a></h5>
+                    </div>
+                </div>
+            }
 
+        </div>
+    </header>
 
     <main>
         <article class="content px-4">
@@ -11,3 +36,97 @@
         </article>
     </main>
 </div>
+
+
+<style>
+    .menubar {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        background-color: orange;
+        width: 100%;
+        height: 50px;
+    }
+    
+
+    .usercontrols {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        justify-content: flex-end;
+    }
+</style>
+@code {
+    private string user;
+    private bool isLoggedIn=false;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        sessionService.OnLoginStateChanged += HandleLoginStateChanged;
+        try
+        {
+            user = await sessionService.GetCurrentUser();
+            if(string.IsNullOrEmpty(user) == false)
+            {
+                isLoggedIn = true;
+            }
+            else
+            {
+                isLoggedIn = false;
+            }
+        }
+        catch (Exception)
+        {
+            isLoggedIn = false;
+
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+
+    }
+    
+    private void HandleLoginStateChanged()
+    {
+        InvokeAsync(async () =>
+        {
+            user = await sessionService.GetCurrentUser();
+            isLoggedIn = !string.IsNullOrEmpty(user);
+            StateHasChanged(); 
+        });
+    }
+
+    public void Dispose()
+    {
+        sessionService.OnLoginStateChanged -= HandleLoginStateChanged;
+    }
+
+    private async Task Logout()
+    {
+
+        if (string.IsNullOrEmpty(user) == false)
+        {
+            await sessionService.Logout();
+            user = null;
+            isLoggedIn = false;
+            StateHasChanged();
+        }
+    }
+    private void GoToViewEmployees()
+    {
+        navigation.NavigateTo("/Employees");
+    }
+    private void GoToViewDepartments()
+    {
+        navigation.NavigateTo("/Departments");
+    }
+    private void GoHome()
+    {
+        navigation.NavigateTo("/");
+    }
+
+}

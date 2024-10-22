@@ -1,9 +1,3 @@
-Sa las optionea ca la filtrare sa se poada selecta tipul de filtrare, in sensul:
-	-sort by Name
-	-sort by Department
-	-.... 
-	Si sa fie bifabile si sa fie unele Ascending/Descending..
-
 
 Sa adaug un manager pe departament
 
@@ -18,17 +12,7 @@ Sa folosesc structura MVC
 
 
 
-
-sa adaug legaturi intre tabele
-
-
-Sa adaug o pagina de autentificare
-
-Sa adaug pagina am uitat parola
-Sa adaug criptare la parola
-
-
-
+Sa salvez parola in browser
 
 
 

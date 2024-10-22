@@ -1,36 +1,57 @@
 ﻿@page "/AddDepartment"
 @inject IDepartmentData departmentData
 @inject NavigationManager navigation
-<h3>DepartmentCreate</h3>
+@inject SessionService sessionService
+
+@if (String.IsNullOrEmpty(user) == true)
+{
+    <em>Loading....</em>
+}
+else
+{
+    <h3>DepartmentCreate</h3>
 
 
-<div>
-    <table>
+    <div>
+        <table>
 
-        <tbody>
-            <tr>
-                <td>Department Name:</td>
-                <td>
-                    <input type="text" @bind="DepartmentName" placeholder="Department Name" required />
-                </td>
-            </tr>
+            <tbody>
+                <tr>
+                    <td>Department Name:</td>
+                    <td>
+                        <input type="text" @bind="DepartmentName" placeholder="Department Name" required />
+                    </td>
+                </tr>
 
-                      
-        </tbody>
-    </table>
 
-</div>
-<div>
-    <button @onclick="AddInsert">Add</button>  <button @onclick="Cancel">Cancel</button>
-    @if (String.IsNullOrEmpty(errorMessage) == false)
-    {
-        <div style="color:red;">@errorMessage</div>
-    }
-</div>
+            </tbody>
+        </table>
 
+    </div>
+    <div>
+        <button @onclick="AddInsert">Add</button>  <button @onclick="Cancel">Cancel</button>
+        @if (String.IsNullOrEmpty(errorMessage) == false)
+        {
+            <div style="color:red;">@errorMessage</div>
+        }
+    </div>
+}
 @code {
     public String DepartmentName { get; set; }
     private string errorMessage;
+    private string user = null;
+    protected override async Task OnAfterRenderAsync(bool rendered)
+    {
+        if (rendered)
+        {
+            user = await sessionService.GetCurrentUser();
+            if (string.IsNullOrEmpty(user) == true)
+            {
+                navigation.NavigateTo("/Login");
+            }
+            StateHasChanged();
+        }
+    }
 
     private async Task AddInsert()
     {
@@ -54,7 +75,7 @@
         {
             errorMessage = "Please Enter a Department Name";
         }
-        
+
         else
         {
             errorMessage = "";
