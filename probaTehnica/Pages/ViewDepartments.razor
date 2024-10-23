@@ -2,8 +2,7 @@
 @inject IDepartmentData departmentData
 @inject NavigationManager navigation
 @inject SessionService sessionService
-
-
+@inject IUserData userData
 <h3>ViewDepartments</h3>
 @if (departments == null)
 {
@@ -18,7 +17,10 @@ else
             <option value="AlphabeticAsc">Alphabetic Ascending</option>
             <option value="AlphabeticDesc">Alphabetic Descending</option>
         </select>
-        <span style="color:limegreen; font-size:50px;cursor:pointer" @onclick="GoToCreate">&#43;</span>
+        @if (isAdmin == true)
+        {
+            <span style="color:limegreen; font-size:50px;cursor:pointer" @onclick="GoToCreate">&#43;</span>
+        }
     </div>
 
     <table class="table">
@@ -44,9 +46,13 @@ else
                     <td>
                         @department.DepartmentName
                     </td>
-                    <td style="display:flex;align-items:center;">
-                        <button style="margin-right:5px;" @onclick="()=>GoToEdit(department.DepartmentId)">Edit</button><span style="color:red; font-size:23px; cursor:pointer; padding:0px;" @onclick="()=>DeleteDepartment(department.DepartmentId)">❌</span>
-                    </td>
+                    @if (isAdmin== true)
+                    {
+
+                        <td style="display:flex;align-items:center;">
+                            <button style="margin-right:5px;" @onclick="()=>GoToEdit(department.DepartmentId)">Edit</button><span style="color:red; font-size:23px; cursor:pointer; padding:0px;" @onclick="()=>DeleteDepartment(department.DepartmentId)">❌</span>
+                        </td>
+                    }
                 </tr>
             }
         </tbody>
@@ -62,8 +68,8 @@ else
     private int resultsCount = 0;
     private static readonly SemaphoreSlim semaphore = new(1, 1);
     private CancellationTokenSource cancellationToken;
-    private string user = null;
-
+    private string currentUser = null;
+    private bool isAdmin = false;
     protected override async Task OnInitializedAsync()
     {
         departments = await departmentData.Departments();
@@ -73,14 +79,24 @@ else
     {
         if (rendered)
         {
-            user = await sessionService.GetCurrentUser();
-            if (string.IsNullOrEmpty(user) == true)
-            {
-                navigation.NavigateTo("/Login");
-            }
+            await LoadUserData();
             StateHasChanged();
         }
     }
+
+
+    private async Task LoadUserData()
+    {
+        currentUser = await sessionService.GetCurrentUser();
+        if (string.IsNullOrEmpty(currentUser) == true)
+        {
+            navigation.NavigateTo("/Login");
+            return;
+        }
+        isAdmin = await sessionService.GetUserRole();
+    }
+
+
     private async Task SearchBoxModified(string searchBoxText)
     {
         searchedText = searchBoxText;
@@ -132,8 +148,8 @@ else
         {
             if (reached)
             {
-                
-            semaphore.Release();
+
+                semaphore.Release();
             }
         }
     }

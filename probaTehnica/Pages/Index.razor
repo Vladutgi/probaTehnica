@@ -1,10 +1,10 @@
-﻿@page "/"
+﻿<PageTitle>Index</PageTitle>
+@page "/"
 @inject IDepartmentData departmentData
 @inject IEmployeeData employeeData
 @inject NavigationManager navigation
 @inject SessionService sessionService
-<PageTitle>Index</PageTitle>
-@if (String.IsNullOrEmpty(user) == true)
+@if (sessionService==null)
 {
     <em>Loading....</em>
 }
@@ -70,28 +70,32 @@ else
     private List<BarChartData> MinMaxSalary = new List<BarChartData>();
     private List<BarChartData> EmployeesPerDepartment = new List<BarChartData>();
     private List<BarChartData> EmployeeSalary = new List<BarChartData>();
-    private string user;
-    protected override async Task OnInitializedAsync()
+
+
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        employees = await employeeData.Employees();
-        CalculateAverageSalary();
-        ShowMinMaxSalaries();
-        ShowEmployeesPerDepartment();
-        EmployeeSalaries();
-    }
-    protected override async Task OnAfterRenderAsync(bool rendered)
-    {
-        if (rendered)
+        if (firstRender)
         {
-            user = await sessionService.GetCurrentUser();
-            if (string.IsNullOrEmpty(user) == true)
+            var currentUser = await sessionService.GetCurrentUser();
+            if (currentUser == null)
             {
-                await sessionService.Logout();
-                //navigation.NavigateTo("/Login");
+                navigation.NavigateTo("/Login");
+                return;
             }
-            StateHasChanged();
+
+            
+            employees = await employeeData.Employees();
+            CalculateAverageSalary();
+            ShowMinMaxSalaries();
+            ShowEmployeesPerDepartment();
+            EmployeeSalaries();
+            StateHasChanged(); 
         }
     }
+
+
+
     private void CalculateAverageSalary()
     {
         var results = employees.GroupBy(e => e.Department);

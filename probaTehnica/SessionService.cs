@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.JSInterop;
+using System.Data;
 
 namespace EmployeeManagement;
 public class SessionService
@@ -19,9 +20,11 @@ public class SessionService
 
 
 
-    public async Task SetCurrentUser(string username)
+    public async Task SetCurrentUser(string username,bool role)
     {
         await _sessionStorage.SetAsync("CurrentUser", username);
+        await _sessionStorage.SetAsync("UserRole", role);
+
         OnLoginStateChanged?.Invoke();
     }
 
@@ -31,9 +34,17 @@ public class SessionService
         var result = await _sessionStorage.GetAsync<string>("CurrentUser");
         return result.Success ? result.Value : null;
     }
+    public async Task<bool> GetUserRole()
+    {
+        var result = await _sessionStorage.GetAsync<bool>("UserRole");
+        return result.Value;
+    }
+
     public async Task ClearCurrentUser()
     {
         await _sessionStorage.DeleteAsync("CurrentUser");
+        await _sessionStorage.DeleteAsync("UserRole");
+
     }
 
     public async Task Logout()

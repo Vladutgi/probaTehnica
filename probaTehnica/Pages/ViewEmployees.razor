@@ -3,9 +3,8 @@
 @inject NavigationManager navigation
 @inject SessionService sessionService
 
-
 <h3>ViewEmployees</h3>
-@if (employees == null)
+@if (sessionService == null)
 {
     <p>
         <em>Loading The Data...</em>
@@ -24,7 +23,10 @@ else
             <option value="DepartmentAsc">Department Ascending</option>
             <option value="DepartmentDesc">Department Descending</option>
         </select>
-        <span style="color:limegreen; font-size:50px;cursor:pointer" @onclick="GoToCreate">&#43;</span>
+        @if (isAdmin == true)
+        {
+            <span style="color:limegreen; font-size:50px;cursor:pointer" @onclick="GoToCreate">&#43;</span>
+        }
 
     </div>
     <div>
@@ -37,7 +39,7 @@ else
             <tbody>
                 <tr>
                     <td>
-                        Name<input type="checkbox" value="Name" @onchange="e => FilterBy(e,'n')"/>
+                        Name<input type="checkbox" value="Name" @onchange="e => FilterBy(e,'n')" />
                     </td>
                 </tr>
                 <tr>
@@ -62,7 +64,7 @@ else
                 <th>Department</th>
                 <th>Salary</th>
                 <th>
-                    @if (resultsCount > 0) 
+                    @if (resultsCount > 0)
                     {
                         <div>@resultsCount.ToString() Results</div>
                     }
@@ -72,6 +74,9 @@ else
         </thead>
 
         <tbody>
+            @if (employees != null)
+            {
+                
             @foreach (var employee in employees)
             {
                 <tr>
@@ -85,11 +90,16 @@ else
                     <td>
                         @employee.Salary
                     </td>
-                    <td style="display:flex;align-items:center;">
-                        <button style="margin-right:5px;" @onclick="()=>GoToEdit(employee.EmployeeId)">Edit</button><span style="color:red; font-size:23px; cursor:pointer; padding:0px;" @onclick="()=>DeleteEmployee(employee.EmployeeId)">❌</span>
-                    </td>
+                    @if (isAdmin == true)
+                    {
+
+                        <td style="display:flex;align-items:center;">
+                            <button style="margin-right:5px;" @onclick="()=>GoToEdit(employee.EmployeeId)">Edit</button><span style="color:red; font-size:23px; cursor:pointer; padding:0px;" @onclick="()=>DeleteEmployee(employee.EmployeeId)">❌</span>
+                        </td>
+                    }
 
                 </tr>
+            }
             }
         </tbody>
 
@@ -103,7 +113,8 @@ else
     private int resultsCount;
     private static readonly SemaphoreSlim semaphore = new(1, 1);
     private CancellationTokenSource cancellationToken;
-    private string user = null;
+    private bool isAdmin = false;
+    private string currentUser = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -114,16 +125,25 @@ else
     {
         if (rendered)
         {
-            user = await sessionService.GetCurrentUser();
-            if (string.IsNullOrEmpty(user) == true)
-            {
-                navigation.NavigateTo("/Login");
-            }
+        isAdmin = await sessionService.GetUserRole();
             StateHasChanged();
+
         }
     }
+    private async Task LoadUserData()
+    {
+        currentUser = await sessionService.GetCurrentUser();
+        if (string.IsNullOrEmpty(currentUser) == true)
+        {
+            navigation.NavigateTo("/Login");
+            return;
+        }
+    }
+
+
     protected override async Task OnParametersSetAsync()
     {
+            await LoadUserData();
         employees = await employeeData.Employees();
         resultsCount = employees.Count();
     }
@@ -138,7 +158,7 @@ else
         SelectedFilter = e.Value.ToString();
         await FilterEmployees();
     }
-    private async Task FilterBy(ChangeEventArgs e,char filter)
+    private async Task FilterBy(ChangeEventArgs e, char filter)
     {
         var isChecked = (bool)e.Value;
         if (isChecked)

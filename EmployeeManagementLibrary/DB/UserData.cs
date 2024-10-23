@@ -13,9 +13,9 @@ public class UserData : IUserData
     {
         return await _context.Users.ToListAsync();
     }
-    private async Task<bool> AnyManagers()
+    private async Task<bool> AnyAdministrators()
     {
-        return await _context.Users.AnyAsync(u => u.Role == "Manager");
+        return await _context.Users.AnyAsync(u => u.Role == "Administrator");
     }
     public async Task AddUser(UserModel user)
     {
@@ -24,9 +24,9 @@ public class UserData : IUserData
             var emailExists = await _context.Users.AnyAsync(d => d.Email.Equals(user.Email));
             if (emailExists == false)
             {
-                if ( await AnyManagers() == false)
+                if ( await AnyAdministrators() == false)
                 {
-                    user.Role = "Manager";
+                    user.Role = "Administrator";
                 }
                 else
                 {
@@ -55,7 +55,6 @@ public class UserData : IUserData
 
 
     }
-
     public async Task<UserModel> FindUser(string email,string answer)
     {
         var result = await _context.Users.FirstOrDefaultAsync(u=> u.Email == email);
@@ -92,4 +91,22 @@ public class UserData : IUserData
 
     }
 
+    public async Task<bool> IsAdministrator(string email)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email);
+
+        if (user != null && user.Role == "Administrator")
+        {
+            return true;
+
+        }
+
+        return false;
+
+
+    }
+    public async Task<UserModel> FindUserByEmail(string email)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
+    }
 }

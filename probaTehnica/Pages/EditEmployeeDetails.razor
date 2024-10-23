@@ -3,8 +3,7 @@
 @inject IDepartmentData departmentData
 @inject NavigationManager navigation
 @inject SessionService sessionService
-
-@if (String.IsNullOrEmpty(user) == true)
+@if (sessionService==null)
 {
     <em>Loading....</em>
 }
@@ -78,7 +77,6 @@ else
     private int Salary { get; set; }
     private string SelectedDepartment { get; set; }
     private string errorMessage;
-    private string user = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,10 +94,17 @@ else
     {
         if (rendered)
         {
-            user = await sessionService.GetCurrentUser();
-            if (string.IsNullOrEmpty(user) == true)
+            var currentUser = await sessionService.GetCurrentUser();
+            if (currentUser == null)
             {
                 navigation.NavigateTo("/Login");
+                return;
+            }
+
+            if (await sessionService.GetUserRole() == false)
+            {
+                navigation.NavigateTo("/");
+                return;
             }
             StateHasChanged();
         }
