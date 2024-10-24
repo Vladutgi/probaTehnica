@@ -1,7 +1,6 @@
 ﻿@page "/AddUser"
 @inject IUserData userData
-@inject NavigationManager navigation
-@inject SessionService sessionService
+@inject ISessionService sessionService
 
 
     
@@ -87,7 +86,7 @@
             user = await sessionService.GetCurrentUser();
             if (string.IsNullOrEmpty(user) == false)
             {
-                navigation.NavigateTo("/");
+                sessionService.NavigateTo("/");
             }
             StateHasChanged();
         }
@@ -121,7 +120,7 @@
 
             };
             await userData.AddUser(newInsert);
-            navigation.NavigateTo("/");
+            sessionService.NavigateTo("/");
             IsLoading = false;
 
         }
@@ -170,7 +169,7 @@
     }
     private void Cancel()
     {
-        navigation.NavigateTo("/Login");
+        sessionService.NavigateTo("/Login");
     }
 }
 

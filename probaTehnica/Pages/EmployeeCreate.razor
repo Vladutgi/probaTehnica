@@ -1,8 +1,7 @@
 ﻿@page "/AddEmployee"
 @inject IEmployeeData employeeData
 @inject IDepartmentData departmentData
-@inject NavigationManager navigation
-@inject SessionService sessionService
+@inject ISessionService sessionService
 @if (sessionService==null)
 {
     <em>Loading....</em>
@@ -60,10 +59,10 @@ else
     </div>
 
     <div>
-        <button @onclick="AddInsert">Add</button>  <button @onclick="Cancel">Cancel</button>
+        <button class="addEmployeeButton" @onclick="AddInsert">Add</button>  <button @onclick="Cancel">Cancel</button>
         @if (String.IsNullOrEmpty(errorMessage) == false)
         {
-            <div style="color:red;">@errorMessage</div>
+            <div class="employeeErrMessage" style="color:red;">@errorMessage</div>
         }
     </div>
 }
@@ -74,7 +73,6 @@ else
 
     private string FirstName { get; set; }
     public string LastName { get; set; }
-    //public string Department { get; set; }
     public int Salary { get; set; }
     private string SelectedDepartment { get; set; }
     private string errorMessage;
@@ -90,13 +88,13 @@ else
             var currentUser = await sessionService.GetCurrentUser();
             if (currentUser == null)
             {
-                navigation.NavigateTo("/Login");
+                sessionService.NavigateTo("/Login");
                 return;
             }
 
             if (await sessionService.GetUserRole() == false)
             {
-                navigation.NavigateTo("/");
+                sessionService.NavigateTo("/");
                 return;
             }
             StateHasChanged();
@@ -118,7 +116,7 @@ else
                 Salary = Salary,
             };
         await employeeData.AddEmployee(newInsert);
-        navigation.NavigateTo("/Employees");
+        sessionService.NavigateTo("/Employees");
 
     }
     private void CheckForErrors()
@@ -146,7 +144,7 @@ else
     }
     private void Cancel()
     {
-        navigation.NavigateTo("/Employees");
+        sessionService.NavigateTo("/Employees");
     }
 
 }

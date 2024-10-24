@@ -1,7 +1,6 @@
 ﻿@page "/Departments"
 @inject IDepartmentData departmentData
-@inject NavigationManager navigation
-@inject SessionService sessionService
+@inject ISessionService sessionService
 @inject IUserData userData
 <h3>ViewDepartments</h3>
 @if (departments == null)
@@ -50,7 +49,8 @@ else
                     {
 
                         <td style="display:flex;align-items:center;">
-                            <button style="margin-right:5px;" @onclick="()=>GoToEdit(department.DepartmentId)">Edit</button><span style="color:red; font-size:23px; cursor:pointer; padding:0px;" @onclick="()=>DeleteDepartment(department.DepartmentId)">❌</span>
+                            <button style="margin-right:5px;" @onclick="()=>GoToEdit(department.DepartmentId)">Edit</button>
+                            <span class="deleteDepartmentButton" style="color:red; font-size:23px; cursor:pointer; padding:0px;" @onclick="()=>DeleteDepartment(department.DepartmentId)">❌</span>
                         </td>
                     }
                 </tr>
@@ -90,7 +90,7 @@ else
         currentUser = await sessionService.GetCurrentUser();
         if (string.IsNullOrEmpty(currentUser) == true)
         {
-            navigation.NavigateTo("/Login");
+            sessionService.NavigateTo("/Login");
             return;
         }
         isAdmin = await sessionService.GetUserRole();
@@ -164,11 +164,11 @@ else
 
     private void GoToEdit(int departmentId)
     {
-        navigation.NavigateTo($"/EditDepartmentDetails/{departmentId}");
+        sessionService.NavigateTo($"/EditDepartmentDetails/{departmentId}");
     }
     private void GoToCreate()
     {
-        navigation.NavigateTo("/AddDepartment");
+        sessionService.NavigateTo("/AddDepartment");
     }
 
 }

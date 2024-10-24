@@ -1,17 +1,6 @@
 
 Sa adaug un manager pe departament
 
-
-
-
-Pentru email sa fac o verificare dupa @ si .
-
-
-Sa folosesc structura MVC
-
-
-
-
 Sa salvez parola in browser
 
 

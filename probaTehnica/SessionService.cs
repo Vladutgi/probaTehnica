@@ -4,14 +4,14 @@ using Microsoft.JSInterop;
 using System.Data;
 
 namespace EmployeeManagement;
-public class SessionService
+public class SessionService : ISessionService
 {
     private readonly ProtectedSessionStorage _sessionStorage;
     private readonly ProtectedLocalStorage _localStorage;
     private readonly NavigationManager _navigationManager;
     public event Action OnLoginStateChanged;
 
-    public SessionService(ProtectedSessionStorage sessionStorage,ProtectedLocalStorage localStorage, NavigationManager navigationManager)
+    public SessionService(ProtectedSessionStorage sessionStorage, ProtectedLocalStorage localStorage, NavigationManager navigationManager)
     {
         _sessionStorage = sessionStorage;
         _localStorage = localStorage;
@@ -20,7 +20,7 @@ public class SessionService
 
 
 
-    public async Task SetCurrentUser(string username,bool role)
+    public async Task SetCurrentUser(string username, bool role)
     {
         await _sessionStorage.SetAsync("CurrentUser", username);
         await _sessionStorage.SetAsync("UserRole", role);
@@ -64,12 +64,21 @@ public class SessionService
     public async Task<string> GetSavedEmail()
     {
         var result = await _localStorage.GetAsync<string>("savedEmail");
-        return result.Success ? result.Value : null;    
+        return result.Success ? result.Value : null;
     }
     public async Task ClearSavedEmail()
     {
         await _localStorage.DeleteAsync("savedEmail");
     }
 
+    public void NavigateTo(string uri)
+    {
+        _navigationManager.NavigateTo(uri);
+    }
+
+    public String GetUri()
+    {
+        return _navigationManager.Uri;
+    }
 
 }

@@ -1,8 +1,7 @@
 ﻿@page "/EditEmployeeDetails/{EmployeeId:int}"
 @inject IEmployeeData employeeData
 @inject IDepartmentData departmentData
-@inject NavigationManager navigation
-@inject SessionService sessionService
+@inject ISessionService sessionService
 @if (sessionService==null)
 {
     <em>Loading....</em>
@@ -97,13 +96,13 @@ else
             var currentUser = await sessionService.GetCurrentUser();
             if (currentUser == null)
             {
-                navigation.NavigateTo("/Login");
+                sessionService.NavigateTo("/Login");
                 return;
             }
 
             if (await sessionService.GetUserRole() == false)
             {
-                navigation.NavigateTo("/");
+                sessionService.NavigateTo("/");
                 return;
             }
             StateHasChanged();
@@ -131,7 +130,7 @@ else
         {
 
             await employeeData.UpdateEmployee(modifiedInsert);
-            navigation.NavigateTo("/Employees");
+            sessionService.NavigateTo("/Employees");
         }
         catch { }
 
@@ -163,7 +162,7 @@ else
     }
     private void Cancel()
     {
-        navigation.NavigateTo("/Employees");
+        sessionService.NavigateTo("/Employees");
     }
 
 }

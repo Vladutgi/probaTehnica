@@ -1,7 +1,6 @@
 ﻿@page "/Employees"
 @inject IEmployeeData employeeData
-@inject NavigationManager navigation
-@inject SessionService sessionService
+@inject ISessionService sessionService
 
 <h3>ViewEmployees</h3>
 @if (sessionService == null)
@@ -135,7 +134,7 @@ else
         currentUser = await sessionService.GetCurrentUser();
         if (string.IsNullOrEmpty(currentUser) == true)
         {
-            navigation.NavigateTo("/Login");
+            sessionService.NavigateTo("/Login");
             return;
         }
     }
@@ -242,7 +241,7 @@ else
     }
     private void GoToCreate()
     {
-        navigation.NavigateTo("/AddEmployee");
+        sessionService.NavigateTo("/AddEmployee");
     }
     private async Task DeleteEmployee(int employeeId)
     {
@@ -251,6 +250,6 @@ else
     }
     private void GoToEdit(int employeeId)
     {
-        navigation.NavigateTo($"/EditEmployeeDetails/{employeeId}");
+        sessionService.NavigateTo($"/EditEmployeeDetails/{employeeId}");
     }
 }

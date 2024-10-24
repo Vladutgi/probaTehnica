@@ -2,8 +2,7 @@
 @page "/"
 @inject IDepartmentData departmentData
 @inject IEmployeeData employeeData
-@inject NavigationManager navigation
-@inject SessionService sessionService
+@inject ISessionService sessionService
 @if (sessionService==null)
 {
     <em>Loading....</em>
@@ -80,7 +79,7 @@ else
             var currentUser = await sessionService.GetCurrentUser();
             if (currentUser == null)
             {
-                navigation.NavigateTo("/Login");
+                sessionService.NavigateTo("/Login");
                 return;
             }
 
@@ -110,15 +109,7 @@ else
     }
 
     private void EmployeeSalaries()
-    {
-        // var results = employees.GroupBy(e => e.Department);
-        // foreach(var dept in results)
-        // {
-        //     double avgSalary = dept.Average(e => e.Salary);
-
-        //     chartData.Add(new BarChartData { Label = dept.Key, Value = avgSalary });
-        // }
-
+    {        
         foreach (var emp in employees)
         {
             EmployeeSalary.Add(new BarChartData { Label = emp.FirstName, Value = emp.Salary });
@@ -151,15 +142,15 @@ else
     }
     private void GoToViewEmployees()
     {
-        navigation.NavigateTo($"/Employees");
+        sessionService.NavigateTo($"/Employees");
     }
     private void GoToViewDepartments()
     {
-        navigation.NavigateTo($"/Departments");
+        sessionService.NavigateTo($"/Departments");
     }
     private void GoToViewAddUsers()
     {
-        navigation.NavigateTo($"/AddUser");
+        sessionService.NavigateTo($"/AddUser");
     }
 
 }

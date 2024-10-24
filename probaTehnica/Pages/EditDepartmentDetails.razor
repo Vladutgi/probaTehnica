@@ -1,7 +1,6 @@
 ﻿@page "/EditDepartmentDetails/{DepartmentId:int}"
 @inject IDepartmentData departmentData
-@inject NavigationManager navigation
-@inject SessionService sessionService
+@inject ISessionService sessionService
 @if (sessionService==null)
 {
     <em>Loading....</em>
@@ -59,13 +58,13 @@ else
             var currentUser = await sessionService.GetCurrentUser();
             if (currentUser == null)
             {
-                navigation.NavigateTo("/Login");
+                sessionService.NavigateTo("/Login");
                 return;
             }
 
             if (await sessionService.GetUserRole()==false)
             {
-                navigation.NavigateTo("/");
+                sessionService.NavigateTo("/");
                 return;
             }
             StateHasChanged();
@@ -91,7 +90,7 @@ else
         {
 
             await departmentData.UpdateDepartment(modifiedInsert);
-            navigation.NavigateTo("/Departments");
+            sessionService.NavigateTo("/Departments");
         }
         catch { }
 
@@ -112,7 +111,7 @@ else
     }
     private void Cancel()
     {
-        navigation.NavigateTo("/Departments");
+        sessionService.NavigateTo("/Departments");
     }
 
 }
