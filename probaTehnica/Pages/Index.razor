@@ -1,8 +1,9 @@
 ﻿<PageTitle>Index</PageTitle>
 @page "/"
+@using EmployeeManagement.Charts
 @inject IDepartmentData departmentData
 @inject IEmployeeData employeeData
-@inject ISessionService sessionService
+@inject Services.ISessionService sessionService
 @if (sessionService==null)
 {
     <em>Loading....</em>

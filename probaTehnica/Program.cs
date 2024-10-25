@@ -1,4 +1,4 @@
-using EmployeeManagement;
+using EmployeeManagement.Services;
 using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +12,6 @@ builder.Services.AddScoped<IDepartmentData, DepartmentData>();
 builder.Services.AddScoped<IEmployeeData, EmployeeData>();
 builder.Services.AddScoped<IUserData, UserData>();
 builder.Services.AddScoped<ISessionService,SessionService>();
-builder.Services.AddScoped<UserService>();
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>

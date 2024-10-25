@@ -1,5 +1,4 @@
-﻿
-namespace EmployeeManagement
+﻿namespace EmployeeManagement.Services
 {
     public interface ISessionService
     {
@@ -15,6 +14,6 @@ namespace EmployeeManagement
         Task SetCurrentUser(string username, bool role);
         Task SetSavedEmail(string email);
         void NavigateTo(string uri);
-        String GetUri();
+        string GetUri();
     }
 }

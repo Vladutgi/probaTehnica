@@ -1,4 +1,4 @@
-﻿namespace EmployeeManagement
+﻿namespace EmployeeManagement.Charts
 {
     public class BarChartData
     {

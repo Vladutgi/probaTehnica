@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.JSInterop;
 using System.Data;
 
-namespace EmployeeManagement;
+namespace EmployeeManagement.Services;
 public class SessionService : ISessionService
 {
     private readonly ProtectedSessionStorage _sessionStorage;
@@ -76,7 +76,7 @@ public class SessionService : ISessionService
         _navigationManager.NavigateTo(uri);
     }
 
-    public String GetUri()
+    public string GetUri()
     {
         return _navigationManager.Uri;
     }

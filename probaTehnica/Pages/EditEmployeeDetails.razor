@@ -1,7 +1,7 @@
 ﻿@page "/EditEmployeeDetails/{EmployeeId:int}"
 @inject IEmployeeData employeeData
 @inject IDepartmentData departmentData
-@inject ISessionService sessionService
+@inject Services.ISessionService sessionService
 @if (sessionService==null)
 {
     <em>Loading....</em>
